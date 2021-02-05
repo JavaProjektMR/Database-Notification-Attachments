@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package databasetest2;
+package OnTimeDatabaseConnector;
 import java.sql.*;
 import java.util.Arrays;
 import org.apache.commons.lang3.ArrayUtils;
@@ -680,7 +680,7 @@ public class Database {
     /*______________________________________________________*/
     /*Notification Service*/
     
-    public static Notification eventToNoti(Event event) /*Done*/
+    public static Notification eventToNotification(Event event) /*Done*/
     {
         User owner = loadUser(event.getOwnerID());
         String username = owner.getUsername();
@@ -710,11 +710,34 @@ public class Database {
     public static Notification[] loadNotifications() /*Done*/
     {
         Event[] allEvents = loadAllEvents();
-        Notification[] notes = new Notification[allEvents.length];
-        for(int i = 0;i<notes.length;i++)
+        Notification[] notifications = new Notification[allEvents.length];
+        for(int i = 0;i<notifications.length;i++)
         {
-            notes[i] = eventToNoti(allEvents[i]);
+            notifications[i] = eventToNotification(allEvents[i]);
         }
-        return notes;
+        return notifications;
+    }
+    
+    public static String[] getLogin() /*Done*/
+    {
+        String[] login = new String[4];
+        try {
+            
+            String query = "select * from maildata"
+                    + " where ID=1 ";
+            
+            Statement state = getStatement();
+            ResultSet Rs = state.executeQuery(query);
+            if(Rs.next())
+            {
+                login[0] = Rs.getString("email");
+                login[1] = Rs.getString("password");
+                login[2] = Rs.getString("host");
+                login[3] = Rs.getString("port");
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return login;
     }
 }

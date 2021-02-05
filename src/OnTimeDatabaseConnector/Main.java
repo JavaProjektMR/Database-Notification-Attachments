@@ -1,9 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package databasetest2;
+/*-------------------------------------------------------------------------*/
+
+
+                     //Testclasse nicht beachten//
+
+
+/*-------------------------------------------------------------------------*/
+
+
+package OnTimeDatabaseConnector;
 
 import java.util.Date;
 
@@ -76,7 +80,11 @@ public class Main {
         participantIDs[2] = 4;
         Event test = new Event("Treffen mit Karma", address, date, "2Stunden", participantIDs, 2, 2, 1);
         Database.storeNewEvent(test);*/
-        
+        String[] login = Database.getLogin();
+        for(int i= 0;i<login.length;i++)
+        {
+            System.out.println(login[i]);
+        }
         Notification[] notes = Database.loadNotifications();
         printNotiArray(notes);
         System.out.println("-----------");
