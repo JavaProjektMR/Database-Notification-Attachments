@@ -1,7 +1,7 @@
 /*-------------------------------------------------------------------------*/
 
 
-                     //Testclasse nicht beachten//
+                //Testclasse nicht beachten und Löschen//
 
 
 /*-------------------------------------------------------------------------*/
@@ -58,35 +58,43 @@ public class Main {
     
     public static void main(String[] args)
     {
-        /*
-        Database.displayTable("user");
+        
+        /*Database.displayTable("user");
         System.out.println("-----------");
-       
+        
+        
+        if(Database.verifyLogin("Maraslon.Ringel@gmx.de", "1234"))
+        {
+            System.out.println("true");
+        }
+        else
+        {
+            System.out.println("false");
+        }
+        User[] all = Database.loadAllUsers();
+        Main.printUserArray(all);
         System.out.println("-----------");
-        Database.displayTable("user");
-        */
+        Database.displayTable("user");*/
+        
         
        
         
         Database.displayTable("event");
         System.out.println("-----------");
         /*String[] address = new String[2];
-        address[0] = "Bordell";
-        address[1] = "bahnhofsvirtel";
-        Date date = new Date(2023-1900,7-1,2,22,12,59);
-        int[] participantIDs = new int[3];
-        participantIDs[0] = 2;
-        participantIDs[1] = 3;
-        participantIDs[2] = 4;
-        Event test = new Event("Treffen mit Karma", address, date, "2Stunden", participantIDs, 2, 2, 1);
-        Database.storeNewEvent(test);*/
-        String[] login = Database.getLogin();
-        for(int i= 0;i<login.length;i++)
-        {
-            System.out.println(login[i]);
-        }
-        Notification[] notes = Database.loadNotifications();
-        printNotiArray(notes);
+        address[0] = "Street";
+        address[1] = "City";*/
+        Date date = new Date(2021-1900,1-1,23,0,0,0);
+        /*int[] members = new int[1];
+        members[0] = 0;
+        Event event = new Event("Treffen mit Trump",address,date,"30min",members,0,0,1);
+        Database.storeNewEvent(event);*/
+        Database.deleteOldEvents();
+        Event[] events = Database.loadUserEvents(1);
+        Notification[] note = Database.loadNotifications();
+        Main.printNotiArray(note);
+        Main.printEventArray(events);
+        
         System.out.println("-----------");
         Database.displayTable("event");
     }
