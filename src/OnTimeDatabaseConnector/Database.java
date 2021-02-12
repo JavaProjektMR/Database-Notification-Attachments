@@ -1,6 +1,6 @@
-/*
+/**
  * Create by Marlon Ringel, 1314614
- * 
+ * Java WiSe 2020/21 Project
  * 
  */
 package OnTimeDatabaseConnector;
@@ -13,10 +13,17 @@ import java.util.Date;
 
 /**
  *
- * @author MyUniLaptop
+ * Provides methodes to connect to the database.
  */
 public class Database {
     
+    
+    /**
+     * Connects to the database and returns a Statement object 
+     * to execute sql querys in the database
+     * @return
+     * @throws SQLException 
+     */
     private static Statement getStatement() throws SQLException /*Done*/
     {
         Connection temp = DriverManager.getConnection("jdbc:mysql://localhost:3306/ontimedatabase", "root", "G0s1");
@@ -24,6 +31,12 @@ public class Database {
         return newStatment;
     }
     
+    /**
+     * Returns the number(int) of entrys a table has.
+     * @param tableName
+     * @return
+     * @throws SQLException 
+     */
     private static int getRowCount(String tableName) throws SQLException /*Done*/
     {
         Statement state = getStatement();
@@ -37,6 +50,10 @@ public class Database {
         return rowCount;
     }
     
+    /**
+     * Prints the contants of a table to system out.
+     * @param tableName 
+     */
     public static void displayTable(String tableName)  /*Done*/
     {
         try {
@@ -60,6 +77,11 @@ public class Database {
         }
     }
     
+    /**
+     * Converts a Java.Util.Date object into a date string.
+     * @param date
+     * @return 
+     */
     public static String convertDate(Date date) /*Done*/
     {
         String datestring = "";
@@ -82,6 +104,11 @@ public class Database {
         return datestring;
     }
     
+    /**
+     * Converts a date string into java.util.date object.
+     * @param datestring
+     * @return 
+     */
     public static Date convertDate(String datestring) /*Done*/
     {
         String[] temp = datestring.split(" ");
@@ -91,6 +118,11 @@ public class Database {
         return date;
     }
     
+    /**
+     * Returns two date objects. They contain the beginning(mon) 
+     * and end(sun) date of the current week
+     * @return 
+     */
     public static Date[] determineWeek() /*Done*/
     {
         Date now = new Date();
@@ -154,6 +186,13 @@ public class Database {
     /*__________________________________________________*/
     /*Account management*/
     
+    /**
+     * Checks if the given user data is stored inside the database. If they exit, 
+     * false is returned, if not true. 
+     * @param username
+     * @param email
+     * @return 
+     */
     public static Boolean verifyNewAccount(String username, String email) /*Done*/ /*Done*/
     {
         String encryptedUsername = Encryption.encrypt(username);
@@ -188,6 +227,11 @@ public class Database {
         return verify;
     }
     
+    /**
+     * Stores a new user account in the database. 
+     * Make sure that the given data not alredy exists.
+     * @param newUser 
+     */
     public static void storeNewAccount(User newUser) /*Done*/ /*Done*/
     {
         User encryptedNewUser = Encryption.encryptUser(newUser);
@@ -201,7 +245,11 @@ public class Database {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-       
+    /**
+     * Stores a new administrator account in the database. 
+     * Make sure that the given data not alredy exists
+     * @param newUser 
+     */   
     public static void storeNewAccountAdmin(User newUser) /*Done*/ /*Done*/
     {
         User encryptedNewUser = Encryption.encryptUser(newUser);
@@ -216,6 +264,12 @@ public class Database {
         }
     }
     
+    /**
+     * Loads a user identified by his username from the database and returns it
+     * as an user object.
+     * @param username
+     * @return 
+     */
     public static User loadUser(String username) /*Done*/ /*Done*/
     {
         String encryptedUsername = Encryption.encrypt(username);
@@ -238,7 +292,12 @@ public class Database {
         }
         return new User();
     }
-
+    /**
+     * Loads a user identified by his id from the database and returns it
+     * as an user object.
+     * @param userid
+     * @return 
+     */
     public static User loadUser(int userid) /*Done*/ /*Done*/
     {
         try {
@@ -260,6 +319,12 @@ public class Database {
         return new User();
     }
     
+    /**
+     * Loads a user identified by his email address from the database and returns it
+     * as an user object.
+     * @param useremail
+     * @return 
+     */
     public static User loadUserViaEmail(String useremail) /*Done*/ /*Done*/
     {
         String encryptedEmail = Encryption.encrypt(useremail);
@@ -282,6 +347,10 @@ public class Database {
         return new User();
     }
     
+    /**
+     * Loads all users from the database and returns them as a user object array.
+     * @return 
+     */
     public static User[] loadAllUsers() /*Done*/ /*Done*/
     {
         try {
@@ -302,6 +371,10 @@ public class Database {
         return new User[0];
     }
     
+    /**
+     * Takes a user and stores changes(if they exist) in the database.
+     * @param updatedUser 
+     */
     public static void updateUser(User updatedUser) /*Done*/ /*Done*/
     {
         User encryptedUpdatedUser = Encryption.encryptUser(updatedUser);
@@ -332,7 +405,14 @@ public class Database {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+    /**
+     * Takes the login information and compares them to the database. 
+     * If the exist true is returned, else false. The "login" attrebute can
+     * contain either a email address or a username.
+     * @param login
+     * @param password
+     * @return 
+     */
     public static boolean verifyLogin(String login, String password) /*Done*/ /*Done*/
     {
         Boolean logginDataVerified = false;
@@ -389,6 +469,13 @@ public class Database {
         return logginDataVerified;
     }
     /*Contacts*/
+    
+    /**
+     * Adds a contact to the users(loggedin) account. The changes get stored in the
+     * database.
+     * @param loggedin
+     * @param contact 
+     */
     public static void addContact(User loggedin, User contact) /*Done*/ /*Done*/
     {
         if(loggedin.getContactIDs()[0] != 0)
@@ -410,6 +497,12 @@ public class Database {
         updateUser(loggedin);
     }
     
+    /**
+     * Deletes a contact from the users(loggedin) account.
+     * The changes get stored in the database.
+     * @param loggedin
+     * @param unfriend 
+     */
     public static void deleteContact(User loggedin, User unfriend) /*Done*/ /*Done*/
     {
         if(loggedin.getContactIDs().length==1)
@@ -439,6 +532,12 @@ public class Database {
         Database.updateUser(loggedin);
     }
     
+    /**
+     * Loads the accounts of all contacts of a user. The accounts get returned as a 
+     * user object array.
+     * @param loggedin
+     * @return 
+     */
     public static User[] loadContacts(User loggedin) /*Done*/ /*Done*/
     {
         User[] friends = new User[0];
@@ -457,6 +556,13 @@ public class Database {
 /*______________________________________________________*/
 /* Event management*/
 
+    /**
+     * Sorts and returns Event object array by date. If revwerse is true the 
+     * array is sorted in reversed order.
+     * @param events
+     * @param reverse
+     * @return 
+     */
     public static Event[] sortEvents(Event[] events, Boolean reverse) /*Done*//*Needs Work, Sort in SQL*/
     {
         long[] dates = new long[events.length];
@@ -507,6 +613,10 @@ public class Database {
         return sortedEvents;
     }
     
+    /**
+     * Takes a event object and stores its contants in the database.
+     * @param newEvent 
+     */
     public static void storeNewEvent(Event newEvent) /*Done*/ /*Done*/
     {
         Event encryptedNewEvent = Encryption.encryptEvent(newEvent);
@@ -536,6 +646,10 @@ public class Database {
         }
     }
     
+    /**
+     * Loads all events from the database and returns them as a Event object array.
+     * @return 
+     */
     public static Event[] loadAllEvents() /*Done*/ /*Done*/
     {
         Event[] allEvents = new Event[0];
@@ -578,6 +692,13 @@ public class Database {
         return allEvents;
     }
     
+    
+    /**
+     * Loads the events of a user from the database and returns them as 
+     * a Event object array.
+     * @param userID
+     * @return 
+     */
     public static Event[] loadUserEvents(int userID) /*Done*/ /*Done*/
     {
         
@@ -621,6 +742,12 @@ public class Database {
         return allEvents;
     }
     
+    /**
+     * Load all events of a user which take place in the current week.
+     * The events get returned as a Event object array.
+     * @param userID
+     * @return 
+     */
     public static Event[] loadUserEventsThisWeek(int userID) /*Done*/ /*Done*/
     {
         Event[] allEvents = loadUserEvents(userID);
@@ -646,6 +773,10 @@ public class Database {
         return weekEvents;
     }
 
+    /**
+     * Deletes a Event from the database.
+     * @param event 
+     */
     public static void deleteEvent(Event event) /*Done*/ /*Done*/
     {
         try {
@@ -657,6 +788,9 @@ public class Database {
         }
     }
     
+    /**
+     * Deletes all events which are older than one hour.
+     */
     public static void deleteOldEvents() /*Done*/ /*Done*/
     {
         Date now = new Date();
@@ -671,6 +805,10 @@ public class Database {
         }
     }
     
+    /**
+     * Takes a event and stores its changes(if they exist) in the database.
+     * @param editedEvent 
+     */
     public static void UpdateEvent(Event editedEvent) /*Done*/ /*Done*/
     {
         Event encyptedEditedEvent = Encryption.encryptEvent(editedEvent);
@@ -708,33 +846,56 @@ public class Database {
     /*______________________________________________________*/
     /*Notification Service*/
     
-    public static Notification eventToNotification(Event event) /*Done*/ /*Done*/
+    /**
+     * Converts a Event object into a Notification object. 
+     * Also loads additional data from the database.
+     * Returns a notification object.
+     * @param event
+     * @return 
+     */
+    public static Notification eventToNotification(Event event) /*Done*/ /*Done*/ /*Done*/
      {
         User owner = loadUser(event.getOwnerID());
         String username = owner.getUsername();
         String useremail = owner.getEmail();
         String memberemail = "";
-        User participant = new User();
-        String[] participants = new String[event.getParticipantIDs().length];
-        for(int i = 0;i<event.getParticipantIDs().length;i++)
+        String[] participants;
+        if(event.getParticipantIDs().length==1&&event.getParticipantIDs()[0]==0)
         {
-            participant = loadUser(event.getParticipantIDs()[i]);
-            if(memberemail.equals(""))
+            participants = new String[1];
+            participants[0] = "none";
+            memberemail = "none";
+        }
+        else
+        {    
+        User participant = new User();
+        participants = new String[event.getParticipantIDs().length];
+        
+            for(int i = 0;i<event.getParticipantIDs().length;i++)
             {
-                memberemail = participant.getEmail();
-                participants[i] = participant.getUsername();
-            }
-            else
-            {
-                memberemail = memberemail +","+ participant.getEmail();
-                participants[i] = participant.getUsername();
+                participant = loadUser(event.getParticipantIDs()[i]);
+                if(memberemail.equals(""))
+                {
+                    memberemail = participant.getEmail();
+                    participants[i] = participant.getUsername();
+                }
+                else 
+                {
+                    memberemail = memberemail +","+ participant.getEmail();
+                    participants[i] = participant.getUsername();
+                }
             }
         }
-        
         Notification note = new Notification(username,useremail,memberemail,event.getTitle(),participants,event.getAddress(),event.getNotification(),event.getDate(),event.getDuration(),event.getPriority());
         return note;
     }
 
+    
+    /**
+     * Loads all events from the database and converts them to Notification objects.
+     * Returns a Notification object array.
+     * @return 
+     */
     public static Notification[] loadNotifications() /*Done*/ /*Done*/
     {
         Event[] allEvents = loadAllEvents();
@@ -746,6 +907,11 @@ public class Database {
         return notifications;
     }
     
+    /**
+     * Loads the login information for the notification email host and
+     * returns them as a string array.
+     * @return 
+     */
     public static String[] getLogin() /*Done*/
     {
         String[] login = new String[4];

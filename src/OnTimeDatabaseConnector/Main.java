@@ -83,18 +83,18 @@ public class Main {
         System.out.println("-----------");
         /*String[] address = new String[2];
         address[0] = "Street";
-        address[1] = "City";*/
-        Date date = new Date(2021-1900,1-1,23,0,0,0);
-        /*int[] members = new int[1];
+        address[1] = "City";
+        Date date = new Date(2020-1900,3-1,9,0,0,0);
+        int[] members = new int[1];
         members[0] = 0;
-        Event event = new Event("Treffen mit Trump",address,date,"30min",members,0,0,1);
+        Event event = new Event("26.geburtstag",address,date,"30min",members,0,0,1);
         Database.storeNewEvent(event);*/
-        Database.deleteOldEvents();
+        
         Event[] events = Database.loadUserEvents(1);
+        events = Database.sortEvents(events, false);
+        Main.printEventArray(events);
         Notification[] note = Database.loadNotifications();
         Main.printNotiArray(note);
-        Main.printEventArray(events);
-        
         System.out.println("-----------");
         Database.displayTable("event");
     }
