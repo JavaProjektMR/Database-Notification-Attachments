@@ -65,7 +65,7 @@ public class Database {
                 if(tableName.equals("event"))
                 {
                     System.out.println(table.getInt("ID")+" "+table.getInt("ownerID")+" "+table.getString("title")+" "+table.getString("street")
-                            +" "+table.getString("city")+" "+ table.getDate("date")+" "+table.getString("duration")+" "+table.getInt("notification")+" "+table.getString("participantsID"));
+                            +" "+table.getString("city")+" "+ table.getDate("date")+" "+table.getString("duration")+" "+table.getInt("notification")+" "+table.getString("participantsID")+" "+table.getString("attachment"));
                 }
                 else if(tableName.equals("user"))
                 {
@@ -183,6 +183,77 @@ public class Database {
         return weekStartEnd;
         
     }
+    
+    public static String convertPath(String[] path)
+    {
+        String pathDatabase = "";
+        if(path.length==0)
+        {
+            pathDatabase = "none";
+        }
+        else
+        {
+            for(int i = 0;i<path.length;i++)
+            {
+                char[] temp = path[i].toCharArray();
+                for(int c = 0;c<temp.length;c++)
+                {
+                    if(temp[c] == '\\')
+                    {
+                        temp[c] = '~';
+                    }
+                }
+                path[i] = new String(temp);
+            }
+
+            for(int i = 0;i<path.length;i++)
+            {
+                if(pathDatabase.equals(""))
+                {
+                    pathDatabase = path[i];
+                }
+                else
+                {
+                    pathDatabase = pathDatabase + "*" + path[i];
+                }
+            }
+        }
+        return pathDatabase;
+        
+        
+    }  
+    
+    public static String[] convertPath(String pathDatabase)
+    {
+        String[] temp1 = null;
+        if(pathDatabase.equals("none"))
+        {
+            temp1 = new String[0];
+        }
+        else
+        {
+            temp1 = pathDatabase.split("\\*");
+            for(int i = 0;i<temp1.length;i++)
+            {
+                String[] temp2 = temp1[i].split("~");
+                String temp3 = "";
+                for(int j = 0;j<temp2.length;j++)
+                {
+                    if(temp3.equals(""))
+                    {
+                        temp3 = temp2[j];
+                    }
+                    else
+                    {
+                        temp3 = temp3 + "\\" + temp2[j];
+                    }
+                }
+                temp1[i] = temp3;
+                temp3 = "";
+            } 
+        }
+        return temp1;
+    }
     /*__________________________________________________*/
     /*Account management*/
     
@@ -245,6 +316,7 @@ public class Database {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
     /**
      * Stores a new administrator account in the database. 
      * Make sure that the given data not alredy exists
@@ -292,6 +364,7 @@ public class Database {
         }
         return new User();
     }
+    
     /**
      * Loads a user identified by his id from the database and returns it
      * as an user object.
@@ -405,6 +478,7 @@ public class Database {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
     /**
      * Takes the login information and compares them to the database. 
      * If the exist true is returned, else false. The "login" attrebute can
@@ -563,7 +637,7 @@ public class Database {
      * @param reverse
      * @return 
      */
-    public static Event[] sortEvents(Event[] events, Boolean reverse) /*Done*//*Needs Work, Sort in SQL*/
+    public static Event[] sortEvents(Event[] events, Boolean reverse) /*Done*//*Done*/
     {
         long[] dates = new long[events.length];
         for(int i = 0;i<dates.length;i++)
@@ -617,7 +691,7 @@ public class Database {
      * Takes a event object and stores its contants in the database.
      * @param newEvent 
      */
-    public static void storeNewEvent(Event newEvent) /*Done*/ /*Done*/
+    public static void storeNewEvent(Event newEvent) /*Done*/ /*Done*/ /*Done*/
     {
         Event encryptedNewEvent = Encryption.encryptEvent(newEvent);
         String participants = "";
@@ -633,10 +707,10 @@ public class Database {
                 }
             }
         String query = "Insert into event "
-                + " (ownerID, title, street, city, date, duration, notification, participantsID, priority) "
+                + " (ownerID, title, street, city, date, duration, notification, participantsID, priority, attachment) "
                 + " values ("+encryptedNewEvent.getOwnerID()+", '"+encryptedNewEvent.getTitle()+"','"+encryptedNewEvent.getAddress()[0]
                 +"','"+encryptedNewEvent.getAddress()[1]+"','"+convertDate(encryptedNewEvent.getDate())+"','"+encryptedNewEvent.getDuration()+"',"
-                +encryptedNewEvent.getNotification()+",'"+participants+"',"+encryptedNewEvent.getPriority()+") ";
+                +encryptedNewEvent.getNotification()+",'"+participants+"',"+encryptedNewEvent.getPriority()+",'"+convertPath(newEvent.getAttachments())+"') ";
         try
         {
             Statement state = getStatement();
@@ -650,7 +724,7 @@ public class Database {
      * Loads all events from the database and returns them as a Event object array.
      * @return 
      */
-    public static Event[] loadAllEvents() /*Done*/ /*Done*/
+    public static Event[] loadAllEvents() /*Done*/ /*Done*/ /*Done*/
     {
         Event[] allEvents = new Event[0];
         try {
@@ -680,7 +754,7 @@ public class Database {
                     participants[j] = Integer.parseInt(members[j]);
                 }
                 
-                allEvents[i] = new Event(Rs2.getInt("ID"),Rs2.getString("title"),address,convertDate(Rs2.getString("date")),Rs2.getString("duration"),participants,Rs2.getInt("notification"),Rs2.getInt("priority"),Rs2.getInt("ownerID"));
+                allEvents[i] = new Event(Rs2.getInt("ID"),Rs2.getString("title"),address,convertDate(Rs2.getString("date")),Rs2.getString("duration"),participants,Rs2.getInt("notification"),Rs2.getInt("priority"),Rs2.getInt("ownerID"),convertPath(Rs2.getString("attachment")));
                 if(allEvents[i].getTitle()!=null)
                 {
                     allEvents[i] = Encryption.decryptEvent(allEvents[i]);
@@ -692,14 +766,13 @@ public class Database {
         return allEvents;
     }
     
-    
     /**
      * Loads the events of a user from the database and returns them as 
      * a Event object array.
      * @param userID
      * @return 
      */
-    public static Event[] loadUserEvents(int userID) /*Done*/ /*Done*/
+    public static Event[] loadUserEvents(int userID) /*Done*/ /*Done*/ /*Done*/
     {
         
         String query = "select count(*) from event where ownerID="+userID;
@@ -729,8 +802,7 @@ public class Database {
                 {
                     participants[j] = Integer.parseInt(members[j]);
                 }
-                
-                allEvents[i] = new Event(rC.getInt("ID"),rC.getString("title"),address,convertDate(rC.getString("date")),rC.getString("duration"),participants,rC.getInt("notification"),rC.getInt("priority"),rC.getInt("ownerID"));
+                allEvents[i] = new Event(rC.getInt("ID"),rC.getString("title"),address,convertDate(rC.getString("date")),rC.getString("duration"),participants,rC.getInt("notification"),rC.getInt("priority"),rC.getInt("ownerID"),convertPath(rC.getString("attachment")));
                 if(allEvents[i].getTitle()!=null)
                 {
                     allEvents[i] = Encryption.decryptEvent(allEvents[i]);
@@ -777,8 +849,13 @@ public class Database {
      * Deletes a Event from the database.
      * @param event 
      */
-    public static void deleteEvent(Event event) /*Done*/ /*Done*/
+    public static void deleteEvent(Event event) /*Done*/ /*Done*/ /*Done*/
     {
+        for(int i = 0;i<event.getAttachments().length;i++)
+        {
+            Event.deleteFile(event.getAttachments()[i]);
+        }
+        
         try {
             String query = "delete from event where ID="+event.getId();
             Statement state = getStatement();
@@ -809,7 +886,7 @@ public class Database {
      * Takes a event and stores its changes(if they exist) in the database.
      * @param editedEvent 
      */
-    public static void UpdateEvent(Event editedEvent) /*Done*/ /*Done*/
+    public static void UpdateEvent(Event editedEvent) /*Done*/ /*Done*/ /*Done*/
     {
         Event encyptedEditedEvent = Encryption.encryptEvent(editedEvent);
         String participants = "";
@@ -824,6 +901,20 @@ public class Database {
                 participants = participants +","+ Integer.toString(editedEvent.getParticipantIDs()[i]);
             }
         }
+        String attachments = "none";
+        
+        for(int i = 0;i<encyptedEditedEvent.getAttachments().length;i++)
+        {
+            if(attachments.equals("none"))
+            {
+                attachments = encyptedEditedEvent.getAttachments()[i];
+            }
+            else
+            {
+                attachments = attachments + "\\*" + encyptedEditedEvent.getAttachments()[i];
+            }
+        }
+        
         String query = " update event "
                 + " set title='"+encyptedEditedEvent.getTitle()
                 +"', street='"+encyptedEditedEvent.getAddress()[0]
@@ -834,7 +925,8 @@ public class Database {
                 +", participantsID='"+participants
                 +"', priority="+encyptedEditedEvent.getPriority()
                 +", ownerID="+encyptedEditedEvent.getOwnerID()
-                +" where ID="+encyptedEditedEvent.getId()+"";
+                +", attachment='"+convertPath(encyptedEditedEvent.getAttachments())
+                +"' where ID="+encyptedEditedEvent.getId()+"";
         try {    
             Statement state = getStatement();
             state.executeUpdate(query);
@@ -890,7 +982,6 @@ public class Database {
         return note;
     }
 
-    
     /**
      * Loads all events from the database and converts them to Notification objects.
      * Returns a Notification object array.

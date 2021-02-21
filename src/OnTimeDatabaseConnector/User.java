@@ -79,13 +79,13 @@ public class User {
      * @param friendIDs
      * @param isadmin 
      */
-    public User(int id, String username, String email, String password, String friendIDs, int isadmin) {
+    public User(int id, String username, String email, String password, String contactIDs, int isadmin) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
         
-        String[] temp1 = friendIDs.split(",");
+        String[] temp1 = contactIDs.split(",");
         int[] temp2 = new int[temp1.length];
         for(int i = 0;i<temp1.length;i++)
         {

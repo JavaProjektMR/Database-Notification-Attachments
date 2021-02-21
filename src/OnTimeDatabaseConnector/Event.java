@@ -7,7 +7,17 @@ package OnTimeDatabaseConnector;
 /**
  * Imports the java.util.date class to store the event date as a date object.
  */
+
+import java.awt.Desktop;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 
 
 /**
@@ -42,7 +52,6 @@ public class Event {
      * Contains the account ID'S of the participants of the event.
      */
     private int[] participantIDs;
-    
     /**
      * Contains the notification delay indicator. 
      * 1 = one week
@@ -64,12 +73,18 @@ public class Event {
      * Contains the ID of the user account who created the event.
      */
     private int ownerID;
+    /**
+     * Contains the path strings to the attachment files. 
+     * If no attachemnt exists it's a string array whit lenght == 0;
+     * For excemple: String[] attachments = new String[0];
+     *
+     */
+    private String[] attachments;
  
     /**
      * Empty constructor
      */
-    Event()
-    {
+    Event() {
         
     }
     
@@ -95,6 +110,35 @@ public class Event {
         this.notification = notification;
         this.priority = priority;
         this.ownerID = ownerID;
+        this.attachments = new String[0];
+    }
+    
+    /**
+     * Constructor to use upon event creation when 
+     * the ID isn't assigned by the database 
+     * yet and attachments exist.
+     * @param title
+     * @param address
+     * @param date
+     * @param duration
+     * @param participantIDs
+     * @param notification
+     * @param priority
+     * @param ownerID
+     * @param attachments 
+     */
+    public Event(String title, String[] address, Date date, String duration, int[] participantIDs, int notification, int priority, int ownerID, String[] attachments) {
+        this.id = 0;
+        this.title = title;
+        this.address = address;
+        this.date = date;
+        this.duration = duration;
+        this.participantIDs = participantIDs;
+        this.notification = notification;
+        this.priority = priority;
+        this.ownerID = ownerID;
+        this.attachments = attachments;
+        this.attachments = new String[0];
     }
     
     /**
@@ -122,11 +166,49 @@ public class Event {
     }
     
     /**
+     * Construcktor to load(or copy) a event from the database 
+     * and the event contains attachments
+     * @param id
+     * @param title
+     * @param address
+     * @param date
+     * @param duration
+     * @param participantIDs
+     * @param notification
+     * @param priority
+     * @param ownerID
+     * @param attachments 
+     */
+    public Event(int id, String title, String[] address, Date date, String duration, int[] participantIDs, int notification, int priority, int ownerID, String[] attachments) {
+        this.id = id;
+        this.title = title;
+        this.address = address;
+        this.date = date;
+        this.duration = duration;
+        this.participantIDs = participantIDs;
+        this.notification = notification;
+        this.priority = priority;
+        this.ownerID = ownerID;
+        this.attachments = attachments;
+    }
+    
+    /**
      * Prints all contants of a Event object to system out.
      */
-    public void print()
-    {
-        System.out.println(this.id+" "+this.title+" "+this.address[0]+" "+this.address[1]+" "+this.date+" "+this.duration+" "+this.participantIDs[0]+" "+this.notification+" "+this.priority+" "+this.ownerID);
+    public void print()  {
+        String attachment = "";
+        for(int i = 0;i<this.attachments.length;i++)
+        {
+            if(attachment.equals(""))
+            {
+                attachment = this.attachments[i];
+            }
+            else
+            {
+                attachment = attachment + "\n" + this.attachments[i];
+            }
+        }
+        System.out.println(this.id+" "+this.title+" "+this.address[0]+" "+this.address[1]+" "+this.date+" "+this.duration+" "+this.participantIDs[0]+" "+this.notification+" "+this.priority+" "+this.ownerID+" "+attachment);
     }
     
     /**
@@ -202,6 +284,14 @@ public class Event {
     }
     
     /**
+     * Returns the value of the attachments attribute.
+     * @return 
+     */
+    public String[] getAttachments() {
+        return this.attachments;
+    }
+    
+    /**
      * Stores the given input into the id attribute.
      * @param id 
      */
@@ -271,5 +361,193 @@ public class Event {
      */
     public void setOwnerID(int ownerID) {
         this.ownerID = ownerID;
+    }
+    
+    /**
+     * Stores the given input into the attachments attribute.
+     * @param attachments 
+     */
+    public void setAttachments(String[] attachments) {
+        this.attachments = attachments;
+    }
+    
+    
+    /**
+     * Adds the path of an attachment to the event object.
+     * @param path 
+     */
+    public void addAttachmentToEvent(String path) /*Done*/
+    {
+        String[] temp = null;
+        if(this.attachments.length == 0)
+        {
+            temp = new String[1];
+            temp[0] = path;
+        }
+        else
+        {
+            temp = new String[this.attachments.length+1];
+            for(int i = 0;i<this.attachments.length;i++)
+            {
+                temp[i] = this.attachments[i];
+            }
+            temp[temp.length-1] = path;
+        }
+        this.attachments = temp;
+    }
+    /**
+     * Deletes the path of an Attachment from the event object.
+     * Also deletes the attachment file.
+     * @param path 
+     */
+    public void deleteAttachmentFromEvent(String path) /*Done*/
+    {
+        String[] temp = new String[this.attachments.length-1];        
+        for(int i = 0, j = 0;i<temp.length;i++,j++)
+        {
+            
+            if(this.attachments[j].equals(path))
+            {
+                --i;
+            }
+            else
+            {
+                temp[i] = this.attachments[j];
+            }
+        }
+        this.setAttachments(temp);
+        deleteFile(path);
+    }
+    
+    /**
+     * Copys the attachment file to the attachments folder inside the programm.
+     * Returns the path of the attachment. If no file was picked by the user null
+     * is returned.
+     * Returns null if error.
+     * @return 
+     */
+    public static String addNewAttachment() /*Done*/
+    {
+        String dest = null;
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+        fileChooser.setFileSelectionMode( JFileChooser.FILES_ONLY);
+        int result = fileChooser.showOpenDialog(fileChooser);
+        String source = null;
+        String name = null;
+        if (result == JFileChooser.APPROVE_OPTION) 
+        {
+            File selectedFile = fileChooser.getSelectedFile();
+            source = selectedFile.getAbsolutePath();
+            name = selectedFile.getName();
+            dest = getApplicationPath()+"\\Attachments";
+            new File(dest).mkdirs();
+            File file = new File(dest + "\\" + name);
+            String newName = "";
+
+            for(int i = 1;file.exists();i++)
+            {
+                newName = "";
+                String[] temp = name.split("\\.");
+                for(int j = 0;j<temp.length-1;j++)
+                {
+                    if(newName.equals(""))
+                    {
+                        newName = temp[j];
+                    }
+                    else
+                    {
+                        newName = newName + "." + temp[j];
+                    }
+                    newName = newName + "(" + i + ")." + temp[temp.length-1];
+                }
+                file = new File(dest + "\\" + newName);
+            }
+            if(!newName.equals(""))
+            {
+                dest = dest + "\\" + newName;
+            }
+            else
+            {
+                dest = dest + "\\" + name;
+            }
+            
+            try {
+                Files.copy(Paths.get(source), Paths.get(dest), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ex) {
+                Logger.getLogger(Event.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return dest;
+        
+        
+        
+    }
+    /**
+     * Copys the attachment file to the path choosen by the user.
+     * @param source 
+     */
+    public static void exportAttachment(String source) /*Done*/
+    {
+        String dest = "";
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+        fileChooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
+        int result = fileChooser.showOpenDialog(fileChooser);
+        if (result == JFileChooser.APPROVE_OPTION) 
+        {
+            File selectedFile = fileChooser.getSelectedFile();
+            dest = selectedFile.getAbsolutePath();
+            dest = dest +"\\"+ new File(source).getName();
+            
+            try {
+                Files.copy(Paths.get(source), Paths.get(dest), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ex) {
+                Logger.getLogger(Event.class.getName()).log(Level.SEVERE, null, ex);
+            }
+             
+            
+        }
+      }
+    /**
+     * Takes a path and deletes the corresponding file.
+     * @param path 
+     */
+    public static void deleteFile(String path) /*Done*/
+    {
+        File file = new File(path);
+        file.delete();
+    }
+    /**
+     * Returns the path where the application is stored.
+     * @return 
+     */
+    public static String getApplicationPath() /*Done*/
+    {
+        String path = null;
+        
+        try {
+            path = new File(".").getCanonicalPath();
+        } catch (IOException ex) {
+            Logger.getLogger(Event.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return path;
+    }
+    /**
+     * Takes a path string and opens the correponding file 
+     * in the corresponding programm if one exists.
+     * @param path 
+     */
+    public static void displayAttachment(String path) /*Done*/
+    {
+        if (Desktop.isDesktopSupported()) {
+            try {
+                File attachment = new File(path);
+                Desktop.getDesktop().open(attachment);
+            } 
+            catch (IOException ex) {
+            }
+        }
     }
 }

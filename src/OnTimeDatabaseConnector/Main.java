@@ -59,43 +59,39 @@ public class Main {
     public static void main(String[] args)
     {
         
-        /*Database.displayTable("user");
+       /* Database.displayTable("user");
         System.out.println("-----------");
+        String[] add = new String[2];
+        add[0] = "Street";
+        add[1] = "City";
+        Date date = new Date(2021-1900,2-1,21,15,0,0);
+        int[] par = new int[1];
+        par[0] = 0;
+        Event event = new Event("Treffen mit 4", add, date, "30min", par, 3, 0, 3);
+        //public Event(String title, String[] address, Date date, String duration, int[] participantIDs, int notification, int priority, int ownerID)
+        Database.storeNewEvent(event);
         
-        
-        if(Database.verifyLogin("Maraslon.Ringel@gmx.de", "1234"))
-        {
-            System.out.println("true");
-        }
-        else
-        {
-            System.out.println("false");
-        }
-        User[] all = Database.loadAllUsers();
-        Main.printUserArray(all);
         System.out.println("-----------");
         Database.displayTable("user");*/
         
         
-       
+        
+        
+        
+        /*
         
         Database.displayTable("event");
         System.out.println("-----------");
-        /*String[] address = new String[2];
-        address[0] = "Street";
-        address[1] = "City";
-        Date date = new Date(2020-1900,3-1,9,0,0,0);
-        int[] members = new int[1];
-        members[0] = 0;
-        Event event = new Event("26.geburtstag",address,date,"30min",members,0,0,1);
-        Database.storeNewEvent(event);*/
         
-        Event[] events = Database.loadUserEvents(1);
-        events = Database.sortEvents(events, false);
-        Main.printEventArray(events);
-        Notification[] note = Database.loadNotifications();
-        Main.printNotiArray(note);
         System.out.println("-----------");
-        Database.displayTable("event");
+        Database.displayTable("event");*/
+        
+        NotifikationService.sendInvite("Marlon", "marlon.ringel@gmx.de");
+        
+        /*
+        Thread notifikationService = new Thread(new NotifikationService());
+        notifikationService.start();
+        new UI().setVisible(true);*/
+        
     }
 }
